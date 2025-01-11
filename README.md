@@ -1,4 +1,4 @@
-# weather-web-appWeather App
+# weather-web-app
 
 This is a simple yet powerful weather application that allows users to check real-time weather updates for any location. The app provides details such as temperature, humidity, weather conditions, wind speed, and more, sourced from a reliable weather API.
 
