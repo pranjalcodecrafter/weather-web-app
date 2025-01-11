@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleek Weather App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom, #121212, #1a1a1a);
+            color: #f1f1f1;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 1s ease;
+        }
+        #welcome-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #6e8efb, #a777e3);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex-direction: column;
+            z-index: 100;
+            animation: fadeOut 3s ease-in-out forwards;
+        }
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+        .datetime {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1rem;
+            color: #8b949e;
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out 3s forwards;
+        }
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        .search-bar {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            animation: fadeIn 1s ease-in-out 4s forwards;
+        }
+        .search-bar input {
+            padding: 0.8rem;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            width: 260px;
+            background-color: #222;
+            color: #f1f1f1;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-bar input:focus {
+            background-color: #333;
+            box-shadow: 0 0 10px rgba(110, 142, 251, 0.7);
+        }
+        .search-bar button {
+            padding: 0.8rem 1.2rem;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .search-bar button:hover {
+            transform: scale(1.1);
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            background: rgba(33, 38, 45, 0.7);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.6);
+            transform: translateY(30px);
+            opacity: 0;
+            animation: slideUp 1.5s ease-out 5s forwards;
+        }
+        @keyframes slideUp {
+            0% {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .location {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #6e8efb;
+        }
+        .temp {
+            font-size: 6rem;
+            font-weight: 300;
+        }
+        .description {
+            font-size: 1.8rem;
+            font-style: italic;
+            color: #8b949e;
+        }
+        .details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+        .details div {
+            text-align: center;
+            flex: 1;
+            color: #c9d1d9;
+        }
+        .footer {
+            position: absolute;
+            bottom: 15px;
+            font-size: 0.9rem;
+            color: #8b949e;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="welcome-screen">
+        <h1>Welcome to Your Weather</h1>
+        <p>Weather forecasts with elegance</p>
+    </div>
+    <div class="datetime" id="datetime">--:--</div>
+    <div class="search-bar">
+        <input type="text" id="cityInput" placeholder="Search for a city">
+        <button onclick="searchWeather()">Search</button>
+    </div>
+    <div class="container">
+        <div class="location">--</div>
+        <div class="temp">--&#8451;</div>
+        <div class="description">--</div>
+        <div class="details">
+            <div><span id="humidity">--%</span><br>Humidity</div>
+            <div><span id="wind">-- km/h</span><br>Wind</div>
+            <div><span id="feelsLike">--&#8451;</span><br>Feels Like</div>
+        </div>
+    </div>
+    <div class="footer">
+        Powered by <a href="https://open-meteo.com" target="_blank">Open-Meteo</a>
+    </div>
+    <script>
+        async function fetchWeatherData(city) {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=0&longitude=0&current_weather=true`; // Replace lat/long dynamically
+
+            try {
+                const geocodeResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}`);
+                if (!geocodeResponse.ok) throw new Error('City not found');
+                const geocodeData = await geocodeResponse.json();
+
+                if (!geocodeData.results || geocodeData.results.length === 0) {
+                    throw new Error('No results for this city');
+                }
+
+                const { latitude, longitude, name, country } = geocodeData.results[0];
+                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+                const weatherResponse = await fetch(weatherUrl);
+                if (!weatherResponse.ok) throw new Error('Weather data unavailable');
+                const weatherData = await weatherResponse.json();
+
+                updateWeatherUI(weatherData, name, country);
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`Error fetching weather data: ${error.message}`);
+            }
+        }
+
+        function updateWeatherUI(data, city, country) {
+            const currentWeather = data.current_weather;
+            document.querySelector('.location').innerText = `${city}, ${country}`;
+            document.querySelector('.temp').innerHTML = `${Math.round(currentWeather.temperature)}&#8451;`;
+            document.querySelector('.description').innerText = `Windspeed: ${currentWeather.windspeed} km/h`;
+            document.getElementById('humidity').innerText = `N/A`;
+            document.getElementById('wind').innerText = `${currentWeather.windspeed} km/h`;
+            document.getElementById('feelsLike').innerText = `${Math.round(currentWeather.temperature)}&#8451;`;
+        }
+
+        function searchWeather() {
+            const city = document.getElementById('cityInput').value;
+            if (city) fetchWeatherData(city);
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const formattedDateTime = now.toLocaleString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
+            document.getElementById('datetime').innerText = formattedDateTime;
+        }
+
+        setTimeout(() => {
+            document.getElementById('welcome-screen').style.display = 'none';
+        }, 3000);
+
+        setInterval(updateDateTime, 1000);
+    </script>
+</body>
+</html>
