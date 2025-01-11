@@ -8,7 +8,7 @@ Search for weather by city or location
 Displays current temperature, humidity, and weather conditions
 Provides wind speed and other useful weather data
 User-friendly and responsive design
-Built using [mention technologies used, e.g., JavaScript, React, etc.]
+Built using [mention technologies used, e.g., JavaScript, , etc.]
 Technologies Used:
 
-[React/HTML/CSS/JavaScript/Other frameworks]
+[/HTML/CSS/JavaScript/]
